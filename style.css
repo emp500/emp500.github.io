@@ -1,0 +1,27 @@
+#kana-jp {
+	font-size: 64px;
+}
+
+#kana-ro {
+	font-size: 48px;
+}
+
+/*#userInput {
+	font-size: 32px;
+}*/
+
+body {
+	padding: 1%;
+	max-width: 85%;
+	width: auto;
+	margin: auto;
+}
+
+.spacer {
+	padding-left: 25px;
+	padding-right: 25px;
+}
+
+table, th, td {
+	border: 1px solid black;
+}
