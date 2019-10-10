@@ -1,1 +1,3 @@
-# emp500.github.io
+# Kana trainer
+
+Learn hiragana and katakana
