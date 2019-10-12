@@ -92,7 +92,7 @@
 
                 draw(c) {
                     let ctx = c.getContext("2d");
-                    ctx.font = "20px Arial";
+                    ctx.font = "30px Arial";
                     ctx.fillStyle = "white";
                     ctx.textAlign = "center";
                     
@@ -175,17 +175,7 @@
                 // initialize scrolling background canvas
                 let bgCanvas = initCanvas("bgCanvas", CANVAS_SIZE[0], CANVAS_SIZE[1]);
                 
-                c.addEventListener("keydown", (event) => {
-                    console.log(event.keyCode);
-                    if (INTERVAL === null && event.keyCode === 72) {
-                        CURRENT_CHARSET = hiragana;
-                        startSimulation(c);
-                    }
-                    else if (INTERVAL === null && event.keyCode === 75) {
-                        CURRENT_CHARSET = katakana;
-                        startSimulation(c);
-                    }
-                });
+                
                 
                 // scroll background
                 var ctx = bgCanvas.getContext("2d");
@@ -249,113 +239,138 @@
 
             var CURRENT_CHARSET = hiragana;
 
+            var isGameOver = true;
+
             // simulation logic, most the action happens here
             function startSimulation(c) {
+                let ctx = c.getContext("2d");
+                ctx.font = "32px Arial";
+                ctx.fillStyle = "red";
+                ctx.textAlign = "center";
+                ctx.fillText(`Write H for Hiragana, K for Katakana`, CANVAS_SIZE[0]/2, CANVAS_SIZE[1]/2);
+
+                USERINPUT.focus();
+
                 INTERVAL = setInterval(function() {
-                    if (ENABLE_AUTO_ERASE && USERINPUT.value.length > 3) {
-                        USERINPUT.value = "";
-                    }
-                    // Clear the canvas
-                    clearCanvas(c);
-                    // Draw current score
-                    drawScore(c);
-
-                    // Draw player character on screen
-                    PLAYER.draw(c);
-
-                    // Generate ENEMIES
-                    // Add new enemy every N iteration of the interval loop
-                    if (LOOPS > (50*(1/(SCORE===0)?1:SCORE))) {
-                        ENEMIES.push(new Enemy([rng(0, CANVAS_SIZE[0]),0], [0,rng(2, 6)]));
-                        LOOPS = 0;
-                    }
-                    LOOPS++;
-                   
-                    // Calculate new locations to ENEMIES
-                    for (let i = 0; i < ENEMIES.length; ++i) {
-                        if (!ENEMIES[i].destroyed && USERINPUT.value === ENEMIES[i].kana.ro) {
-                            PLAYER.location = [ENEMIES[i].location[0], PLAYER.location[1]];
-                            BULLETS.push(new Bullet(PLAYER.location, [0, -10]));
+                    if (!isGameOver) {
+                        if (ENABLE_AUTO_ERASE && USERINPUT.value.length > 3) {
                             USERINPUT.value = "";
-                            ENEMIES[i].hitTaken = true;
                         }
-                        // If the enemy ship is not destroyed, move it
-                        if (!ENEMIES[i].destroyed) {
+                        // Clear the canvas
+                        clearCanvas(c);
+                        // Draw current score
+                        drawScore(c);
+
+                        // Draw player character on screen
+                        PLAYER.draw(c);
+
+                        // Generate ENEMIES
+                        // Add new enemy every N iteration of the interval loop
+                        if (LOOPS > (50*(1/(SCORE===0)?1:SCORE))) {
+                            ENEMIES.push(new Enemy([rng(20, CANVAS_SIZE[0]-20),0], [0,rng(2, 6)]));
+                            LOOPS = 0;
+                        }
+                        LOOPS++;
+                    
+                        // Calculate new locations to ENEMIES
+                        for (let i = 0; i < ENEMIES.length; ++i) {
+                            if (!ENEMIES[i].destroyed && !ENEMIES[i].hitTaken && USERINPUT.value === ENEMIES[i].kana.ro) {
+                                PLAYER.location = [ENEMIES[i].location[0], PLAYER.location[1]];
+                                BULLETS.push(new Bullet(PLAYER.location, [0, -10]));
+                                USERINPUT.value = "";
+                                ENEMIES[i].hitTaken = true;
+                            }
+                            // If the enemy ship is not destroyed, move it
+                            if (!ENEMIES[i].destroyed) {
+                                // Get the new location
+                                let velocity = subtractVectors(ENEMIES[i].location, ENEMIES[i].oldLocation);
+                                let newLoc = addVectors(ENEMIES[i].location, velocity);
+
+                                // Update old location and new location variables
+                                ENEMIES[i].oldLocation = ENEMIES[i].location;
+                                ENEMIES[i].location = newLoc;
+
+                                // Draw the enemy on the canvas
+                                ENEMIES[i].draw(c);
+
+                                // If the enemy gets to the bottom of the screen
+                                // it's game over
+                                if ((ENEMIES[i].location[1] >= CANVAS_SIZE[1])) {
+                                    clearCanvas(c);
+                                    drawScore(c, true);
+                                    isGameOver = true;
+                                    //clearInterval(INTERVAL);
+                                    //INTERVAL = null;
+                                    ENEMIES = [];
+                                    BULLETS = [];
+                                    SCORE = 0;
+                                    COMBO = 0;
+                                }
+                            }
+                        }
+
+                        // Calculate new locations to BULLETS
+                        for (let i = 0; i < BULLETS.length; ++i) {
                             // Get the new location
-                            let velocity = subtractVectors(ENEMIES[i].location, ENEMIES[i].oldLocation);
-                            let newLoc = addVectors(ENEMIES[i].location, velocity);
+                            let velocity = subtractVectors(BULLETS[i].location, BULLETS[i].oldLocation);
+                            let newLoc = addVectors(BULLETS[i].location, velocity);
 
                             // Update old location and new location variables
-                            ENEMIES[i].oldLocation = ENEMIES[i].location;
-                            ENEMIES[i].location = newLoc;
+                            BULLETS[i].oldLocation = BULLETS[i].location;
+                            BULLETS[i].location = newLoc;
 
-                            // Draw the enemy on the canvas
-                            ENEMIES[i].draw(c);
+                            // Draw the bullet on the canvas
+                            BULLETS[i].draw(c);
 
-                            // If the enemy gets to the bottom of the screen
-                            // it's game over
-                            if ((ENEMIES[i].location[1] >= CANVAS_SIZE[1])) {
-                                clearCanvas(c);
-                                drawScore(c, true);
-                                clearInterval(INTERVAL);
-                                INTERVAL = null;
-                                ENEMIES = [];
-                                BULLETS = [];
-                                SCORE = 0;
+                            // Hit detection, if a hit is detected, mark bullet and enemy as destroyed
+                            for (let j = 0; j < ENEMIES.length; j++) {
+                                if (ENEMIES[j] !== undefined && BULLETS[i] !== undefined && !BULLETS[i].destroyed && !ENEMIES[j].destroyed && ENEMIES[j].hitTaken && BULLETS[i].checkForHit(ENEMIES[j])) {
+                                        BULLETS[i].destroyed = true;
+                                        ENEMIES[j].destroyed = true;
+                                        SCORE += 10;
+
+                                        COMBO += 1; // get combo for a hit
+                                }
+                            }
+                        }
+
+                        // Remove destroyed enemies
+                        for (let i = 0; i < ENEMIES.length; ++i) {
+                            if (ENEMIES[i].destroyed) {
+                                ENEMIES[i].playHitSound();
+                                ENEMIES.splice(i, 1); 
+                            }
+                            // Remove enemies when they are too far off screen
+                            else if (ENEMIES[i].location[1] < 0 || ENEMIES[i].location > CANVAS_SIZE[1]) {
+                                ENEMIES.splice(i, 1);
+                            }
+                        }
+
+                        // Remove destroyed bullets
+                        for (let i = 0; i < BULLETS.length; ++i) {
+                            if (BULLETS[i].destroyed) {
+                                BULLETS.splice(i, 1);
+                            }
+                            // Remove bullets when they are too far off screen
+                            else if (BULLETS[i].location[1] < 0 || BULLETS[i].location[1] > CANVAS_SIZE[1]) {
+                                BULLETS.splice(i, 1);
                                 COMBO = 0;
                             }
                         }
+
                     }
-
-                    // Calculate new locations to BULLETS
-                    for (let i = 0; i < BULLETS.length; ++i) {
-                        // Get the new location
-                        let velocity = subtractVectors(BULLETS[i].location, BULLETS[i].oldLocation);
-                        let newLoc = addVectors(BULLETS[i].location, velocity);
-
-                        // Update old location and new location variables
-                        BULLETS[i].oldLocation = BULLETS[i].location;
-                        BULLETS[i].location = newLoc;
-
-                        // Draw the bullet on the canvas
-                        BULLETS[i].draw(c);
-
-                        // Hit detection, if a hit is detected, mark bullet and enemy as destroyed
-                        for (let j = 0; j < ENEMIES.length; j++) {
-                            if (ENEMIES[j] !== undefined && BULLETS[i] !== undefined && !BULLETS[i].destroyed && !ENEMIES[j].destroyed && ENEMIES[j].hitTaken && BULLETS[i].checkForHit(ENEMIES[j])) {
-                                    BULLETS[i].destroyed = true;
-                                    ENEMIES[j].destroyed = true;
-                                    SCORE += 10;
-
-                                    COMBO += 1; // get combo for a hit
-                            }
+                    else {
+                        if (USERINPUT.value === "H" || USERINPUT.value === "h") {
+                            CURRENT_CHARSET = hiragana;
+                            USERINPUT.value = "";
+                            isGameOver = false;
+                        }               
+                        else if (USERINPUT.value === "K" || USERINPUT.value === "k") {
+                            CURRENT_CHARSET = katakana;
+                            USERINPUT.value = "";
+                            isGameOver = false;
                         }
                     }
-
-                    // Remove destroyed enemies
-                    for (let i = 0; i < ENEMIES.length; ++i) {
-                        if (ENEMIES[i].destroyed) {
-                            ENEMIES[i].playHitSound();
-                            ENEMIES.splice(i, 1); 
-                        }
-                        // Remove enemies when they are too far off screen
-                        else if (ENEMIES[i].location[1] < 0 || ENEMIES[i].location > CANVAS_SIZE[1]) {
-                            ENEMIES.splice(i, 1);
-                        }
-                    }
-
-                    // Remove destroyed bullets
-                    for (let i = 0; i < BULLETS.length; ++i) {
-                        if (BULLETS[i].destroyed) {
-                            BULLETS.splice(i, 1);
-                        }
-                        // Remove bullets when they are too far off screen
-                        else if (BULLETS[i].location[1] < 0 || BULLETS[i].location[1] > CANVAS_SIZE[1]) {
-                            BULLETS.splice(i, 1);
-                            COMBO = 0;
-                        }
-                    }
-
                 },1000/SIMULATION_RATE);
             }
 
@@ -423,9 +438,9 @@
         <h1>Kana Training Game</h1><hr>
         <div class="wrapper" id="wrapper">
             <canvas id="bgCanvas"></canvas>
-            <canvas id="canvas" tabindex="1"></canvas>
+            <canvas id="canvas"></canvas>
         </div>
-        <p>Enter your answer:</p><input type="text" id="kanaInput"/>
+        <p>Enter your answer:</p><input type="text" id="kanaInput" tabindex="1"/>
         <hr>
         <p>SOUND EFFECTS SOURCE: <a href="https://opengameart.org/content/63-digital-sound-effects-lasers-phasers-space-etc">opengameart.org - Kenney.nl</a></p>
     </body>
