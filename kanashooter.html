@@ -6,15 +6,15 @@
         <style>
             body {
                 background-color: rgb(30, 30, 30);
-				color: rgb(225, 225, 225);
-				font-family: "Verdana";
+		color: rgb(225, 225, 225);
+		font-family: "Verdana";
             }
 
             .wrapper {
                 position: relative;
                 width: 1280px;
                 height: 720px;
-				border: 1px solid grey;
+		border: 1px solid grey;
              }
 
             .wrapper canvas {
@@ -23,12 +23,12 @@
                 left: 0;
             }
 			
-			#kanaInput {
-				font-size: 24px;
-				background-color: rgb(50, 50, 50);
-				color: rgb(225, 225, 225);
-				border: 1px solid grey;
-			}
+	    #kanaInput {
+		font-size: 24px;
+		background-color: rgb(50, 50, 50);
+		color: rgb(225, 225, 225);
+		border: 1px solid grey;
+	    }
         </style>
         <script src="charsets/hiragana.js"></script>
         <script src="charsets/katakana.js"></script>
@@ -62,21 +62,14 @@
                     if (!this.fired) {
                         let laserSound = new Audio("laser3.mp3");
                         laserSound.loop = false;
-
                         laserSound.play();
-
                         this.fired = true;
                     }
                     
                 }
 
                 checkForHit(enemy) {
-                    if (calculateDistance(enemy.location, this.location) <= enemy.radius) {
-                        return true;
-                    }
-                    else {
-                        return false;
-                    }
+                    return calculateDistance(enemy.location, this.location) <= enemy.radius;
                 }
             }
 
@@ -107,12 +100,13 @@
                 playHitSound() {
                     // Play destroyed sound when... destroyed.
                     let destroyedSound = new Audio("pepSound5.mp3");
-                        destroyedSound.loop = false;
-                        destroyedSound.play();
+                    destroyedSound.loop = false;
+                    destroyedSound.play();
                 }
             }
 
             
+	    // Pick a random character from the given charset array
             function pickRandomCharacter(kana) {
                 return kana[Math.floor(Math.random() * kana.length)];
             }
@@ -147,7 +141,6 @@
 
             
             // Draw score on canvas
-            // Includes combo and ammo as well
             function drawScore(c, isGameOver=false) {
                 let ctx = c.getContext("2d");
                 ctx.font = "32px Arial";
@@ -159,12 +152,7 @@
                 else {
                     ctx.fillStyle = "white";
                     ctx.textAlign = "left";
-                    //if (COMBO > 1) {
-                    //    ctx.fillText(`Score: ${SCORE} (x${COMBO} COMBO!!)`, 0, 32);
-                    //}
-                    //else {
-                        ctx.fillText(`Score: ${SCORE}`, 0, 32);
-                    //} 
+                    ctx.fillText(`Score: ${SCORE}`, 0, 32);
                 }
             }
 
@@ -180,8 +168,6 @@
                 // initialize scrolling background canvas
                 let bgCanvas = initCanvas("bgCanvas", CANVAS_SIZE[0], CANVAS_SIZE[1]);
                 
-                
-                
                 // scroll background
                 var ctx = bgCanvas.getContext("2d");
                 var bgImg = new Image();
@@ -190,7 +176,7 @@
                 bgImg.onload = function() {
                     
                     var imgHeight = 0;
-                    var scrollSpeed = 5;
+                    var scrollSpeed = 3;
 
                     function loop() {
                         if (INTERVAL !== null) {
@@ -211,8 +197,6 @@
 
                     loop();
                 }
-                 // scroll bg end
-
 
                 // start actual simulation
                 startSimulation(c);
@@ -224,26 +208,24 @@
             var BULLETS=[];
             // Player location
             var PLAYER = new Player([CANVAS_SIZE[0]/2, CANVAS_SIZE[1] - 25]);
-            
             // how many times is the simulation being done in a second (Hz)
             var SIMULATION_RATE = 30;
             // Score
             var SCORE = 0;
-            
             // Current combo
             var COMBO = 0;
-            
             // the interval is stored in this variable
             var INTERVAL = null;
-
+			
+			// loops performed
             let LOOPS = 0;
-
+			// user input textbox
             var USERINPUT = null;
-
+			// Erase textbox text automatically
             var ENABLE_AUTO_ERASE = false;
-
+			// Current character set
             var CURRENT_CHARSET = hiragana;
-
+			// Is game over?
             var isGameOver = true;
 
             // simulation logic, most the action happens here
@@ -304,14 +286,11 @@
                                     clearCanvas(c);
                                     drawScore(c, true);
                                     isGameOver = true;
-                                    //clearInterval(INTERVAL);
-                                    //INTERVAL = null;
                                     ENEMIES = [];
                                     BULLETS = [];
                                     SCORE = 0;
                                     COMBO = 0;
-									
-									USERINPUT.value = "";
+				    USERINPUT.value = "";
                                 }
                             }
                         }
