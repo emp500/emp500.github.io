@@ -6,6 +6,7 @@
         <style>
             body {
                 background-color: lightblue;
+				font-family: "Verdana";
             }
             canvas {
                 position: absolute;
@@ -24,6 +25,10 @@
                 top: 0;
                 left: 0;
             }
+			
+			#kanaInput {
+				font-size: 24px;
+			}
         </style>
         <script src="charsets/hiragana.js"></script>
         <script src="charsets/katakana.js"></script>
@@ -154,12 +159,12 @@
                 else {
                     ctx.fillStyle = "white";
                     ctx.textAlign = "left";
-                    if (COMBO > 1) {
-                        ctx.fillText(`Score: ${SCORE} (x${COMBO} COMBO!!)`, 0, 32);
-                    }
-                    else {
+                    //if (COMBO > 1) {
+                    //    ctx.fillText(`Score: ${SCORE} (x${COMBO} COMBO!!)`, 0, 32);
+                    //}
+                    //else {
                         ctx.fillText(`Score: ${SCORE}`, 0, 32);
-                    } 
+                    //} 
                 }
             }
 
@@ -218,7 +223,7 @@
             // Array for bullets
             var BULLETS=[];
             // Player location
-            var PLAYER = new Player([CANVAS_SIZE[0]/2, CANVAS_SIZE[1] - 50]);
+            var PLAYER = new Player([CANVAS_SIZE[0]/2, CANVAS_SIZE[1] - 25]);
             
             // how many times is the simulation being done in a second (Hz)
             var SIMULATION_RATE = 30;
@@ -267,16 +272,16 @@
                         // Generate ENEMIES
                         // Add new enemy every N iteration of the interval loop
                         if (LOOPS > (50*(1/(SCORE===0)?1:SCORE))) {
-                            ENEMIES.push(new Enemy([rng(20, CANVAS_SIZE[0]-20),0], [0,rng(2, 6)]));
+                            ENEMIES.push(new Enemy([rng(40, CANVAS_SIZE[0]-40),0], [0,rng(2, 6)]));
                             LOOPS = 0;
                         }
                         LOOPS++;
                     
                         // Calculate new locations to ENEMIES
                         for (let i = 0; i < ENEMIES.length; ++i) {
-                            if (!ENEMIES[i].destroyed && !ENEMIES[i].hitTaken && USERINPUT.value === ENEMIES[i].kana.ro) {
+                            if (!ENEMIES[i].destroyed && !ENEMIES[i].hitTaken && USERINPUT.value.toLowerCase() === ENEMIES[i].kana.ro) {
                                 PLAYER.location = [ENEMIES[i].location[0], PLAYER.location[1]];
-                                BULLETS.push(new Bullet(PLAYER.location, [0, -10]));
+                                BULLETS.push(new Bullet(PLAYER.location, [0, -20]));
                                 USERINPUT.value = "";
                                 ENEMIES[i].hitTaken = true;
                             }
@@ -295,7 +300,7 @@
 
                                 // If the enemy gets to the bottom of the screen
                                 // it's game over
-                                if ((ENEMIES[i].location[1] >= CANVAS_SIZE[1])) {
+                                if (ENEMIES[i].location[1] >= CANVAS_SIZE[1]) {
                                     clearCanvas(c);
                                     drawScore(c, true);
                                     isGameOver = true;
@@ -305,6 +310,8 @@
                                     BULLETS = [];
                                     SCORE = 0;
                                     COMBO = 0;
+									
+									USERINPUT.value = "";
                                 }
                             }
                         }
