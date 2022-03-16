@@ -1,8 +1,18 @@
 // canvas size [x, y]. Remember to change wrapper too. (css)
 var CANVAS_SIZE = [1280, 720];
 
+// url params
+const urlParams = new URLSearchParams(window.location.search);
+
 // main function, executed on body load
 function main() {
+    // check if url params given
+    let mobile = urlParams.get('mobile');
+    
+    if (mobile === '1') {
+        CANVAS_SIZE = [720, 1280];
+    }
+    
     // init text input
     USERINPUT = document.getElementById("kanaInput");
     // initialize main canvas
@@ -48,8 +58,6 @@ function main() {
 var ENEMIES=[];
 // Array for bullets
 var BULLETS=[];
-// Player location
-var PLAYER = new Player([CANVAS_SIZE[0]/2, CANVAS_SIZE[1] - 25]);
 // how many times is the simulation being done in a second (Hz)
 var SIMULATION_RATE = 30;
 // Score
@@ -72,11 +80,14 @@ var isGameOver = true;
 
 // simulation logic, most the action happens here
 function startSimulation(c) {
+    // Player location
+    var PLAYER = new Player([CANVAS_SIZE[0]/2, CANVAS_SIZE[1] - 25]);
+
     let ctx = c.getContext("2d");
     ctx.font = "32px Arial";
     ctx.fillStyle = "red";
     ctx.textAlign = "center";
-    ctx.fillText(`ゲームにようこそ！`, CANVAS_SIZE[0]/2, CANVAS_SIZE[1]/2);
+    ctx.fillText(`ゲームへようこそ！`, CANVAS_SIZE[0]/2, CANVAS_SIZE[1]/2);
     ctx.fillText(`Write H for Hiragana, K for Katakana`, CANVAS_SIZE[0]/2, CANVAS_SIZE[1]/2 + 64);
     ctx.fillText(`Please use the textbox below to play the game.`, CANVAS_SIZE[0]/2, CANVAS_SIZE[1]/2 + 128);
 
@@ -91,7 +102,6 @@ function startSimulation(c) {
             clearCanvas(c);
             // Draw current score
             drawScore(c);
-
             // Draw player character on screen
             PLAYER.draw(c);
 
