@@ -197,7 +197,15 @@ function toggleTips() {
 	}
 }
 
+/* 
+
+font-family: 'DotGothic16', sans-serif;
+font-family: 'Noto Sans JP', sans-serif;
+font-family: 'RocknRoll One', sans-serif;
+
+*/
 let charsetOpen = false;
+let fontFamilies = ["font-family: 'DotGothic16', sans-serif;", "font-family: 'Noto Sans JP', sans-serif;", "font-family: 'RocknRoll One', sans-serif;"];
 function printAll(charsetSwitched) {
 	if (!examMode) {
 		let print = document.getElementById("print");
@@ -205,8 +213,14 @@ function printAll(charsetSwitched) {
 	
 		if (print.innerText.length < 1 || charsetSwitched) {
 			html = "<table><tr>";
+			
 			for (let i = 0; i < charset.length; ++i) {
-				html += '<td><b style="text-align: center;">' + ((i+1) + '.</b><br> <span style="font-size: 32px">' + charset[i].jp + '</span><span style="font-size: 16px">' + charset[i].ro) + '</span></td>';
+				let differentFontsKana = "";
+
+				for (let f = 0; f < fontFamilies.length; ++f) {
+					differentFontsKana += '<span style="font-size: 32px; ' + fontFamilies[f] + '">' + charset[i].jp + '</span>';
+				}
+				html += '<td><b style="text-align: center;">' + ((i+1) + '.</b><br>' + differentFontsKana + '<span style="font-size: 16px">' + charset[i].ro) + '</span></td>';
 				
 				if ((i+1) % 5 === 0 && i !== 0) {
 					html += "</tr><tr>"
