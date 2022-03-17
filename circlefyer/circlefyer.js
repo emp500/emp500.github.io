@@ -38,7 +38,7 @@ function circleMe() {
        
         if (text[i+1] !== undefined) nextChar = text[i+1].codePointAt(0).toString(16);
        
-        //console.log(currentChar + " " + nextChar);
+        console.log(currentChar + " " + nextChar);
        
         // Replace each one of 🟩🟨⬜ with 🟢🟡⚪ respectively
 
@@ -50,9 +50,8 @@ function circleMe() {
             rebuilt += '🟡';
             i++;
         }
-        else if (currentChar === "2b1c" && nextChar === "20") {
+        else if (currentChar === "2b1b") {
             rebuilt += '⚪';
-            i++;
         }
         else {
             rebuilt += text[i];
